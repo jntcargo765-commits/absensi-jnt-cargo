@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ABSENSI JNT CARGO</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f1f3f6;margin:0;color:#222}
+header{background:#c8102e;color:white;text-align:center;padding:22px}
+main{max-width:520px;margin:20px auto;padding:12px}
+.card{background:white;padding:18px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 8px #0001}
+input,button{box-sizing:border-box;width:100%;padding:13px;margin:8px 0;border-radius:8px;font-size:16px}
+input{border:1px solid #bbb}
+button{border:0;background:#c8102e;color:white;font-weight:bold}
+.secondary{background:#263548}
+.hidden{display:none}
+.small{font-size:13px;color:#666}
+#message,#adminMessage{white-space:pre-wrap;font-size:14px}
+.record{border-top:1px solid #ddd;padding:12px 0;overflow-wrap:anywhere}
+.record img{width:120px;border-radius:8px;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+<h1>ABSENSI JNT CARGO</h1>
+<div>Portal Kehadiran Karyawan</div>
+</header>
+
+<main>
+<section class="card" id="employeePage">
+<h2>Absensi Karyawan</h2>
+<p class="small">Isi nama, ambil selfie, dan aktifkan GPS.</p>
+<input id="employeeName" placeholder="Nama karyawan">
+<label for="photo">Foto selfie:</label>
+<input id="photo" type="file" accept="image/*" capture="user">
+<button onclick="sendAttendance('MASUK')">ABSEN MASUK</button>
+<button onclick="sendAttendance('PULANG')">ABSEN PULANG</button>
+<p id="message"></p>
+</section>
+
+<section class="card">
+<button class="secondary" onclick="showLogin()">Dashboard Admin</button>
+</section>
+
+<section class="card hidden" id="loginBox">
+<h2>Login Admin</h2>
+<input id="adminEmail" type="email" placeholder="Email admin">
+<input id="adminPassword" type="password" placeholder="Password admin">
+<button onclick="adminLogin()">MASUK</button>
+<button class="secondary" onclick="hideLogin()">Kembali</button>
+<p id="adminMessage"></p>
+</section>
+
+<section class="card hidden" id="adminPage">
+<h2>Laporan Absensi</h2>
+<button onclick="loadReports()">Muat ulang laporan</button>
+<div id="reports">Belum dimuat.</div>
+<button class="secondary" onclick="adminLogout()">Keluar Admin</button>
+</section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDp_ynIUWxiMchjZMv-OOl-gw4uhO1jmBE",
+  authDomain: "absensi-jnt-cargo-7d9e3.firebaseapp.com",
+  projectId: "absensi-jnt-cargo-7d9e3",
+  storageBucket: "absensi-jnt-cargo-7d9e3.firebasestorage.app",
+  messagingSenderId: "1032258890398",
+  appId: "1:1032258890398:web:b29bd2d6250b08342e698f"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    try {
+      await auth.signInAnonymously();
+    } catch (error) {
+      document.getElementById("message").textContent =
+        "Gagal masuk: " + error.message;
+    }
+  }
+});
+
+function showLogin() {
+  document.getElementById("loginBox").classList.remove("hidden");
+}
+function hideLogin() {
+  document.getElementById("loginBox").classList.add("hidden");
+}
+function say(message) {
+  document.getElementById("message").textContent = message;
+}
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+
+async function sendAttendance(status) {
+  const buttonList = document.querySelectorAll("#employeePage button");
+  buttonList.forEach(b => b.disabled = true);
+
+  try {
+    const name = document.getElementById("employeeName").value.trim();
+    const file = document.getElementById("photo").files[0];
+
+    if (!name) throw new Error("Nama karyawan harus diisi.");
+    if (!file) throw new Error("Silakan ambil foto selfie terlebih dahulu.");
+    if (!file.type.startsWith("image/")) throw new Error("File harus berupa foto.");
+    if (file.size > 5 * 1024 * 1024) throw new Error("Ukuran foto maksimal 5 MB.");
+
+    say("Memeriksa akun dan mengambil lokasi GPS...");
+
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
+    }
+
+    const position = await new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("GPS tidak didukung oleh perangkat ini."));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0
+      });
+    });
+
+    say("Mengunggah foto selfie...");
+
+    const uid = auth.currentUser.uid;
+    const photoPath = "attendance/" + uid + "/" + Date.now() + ".jpg";
+    const photoRef = storage.ref().child(photoPath);
+    await photoRef.put(file);
+    const photoURL = await photoRef.getDownloadURL();
+
+    say("Menyimpan data absensi...");
+
+    await db.collection("absensi").add({
+      nama: name,
+      status: status,
+      uid: uid,
+      waktu: new Date().toISOString(),
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      akurasiGPS: position.coords.accuracy,
+      fotoURL: photoURL,
+      fotoPath: photoPath
+    });
+
+    say("Absensi " + status + " berhasil dikirim. Terima kasih!");
+    document.getElementById("photo").value = "";
+  } catch (error) {
+    say("Absensi belum berhasil: " + error.message);
+  } finally {
+    buttonList.forEach(b => b.disabled = false);
+  }
+}
+
+async function adminLogin() {
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
+  const msg = document.getElementById("adminMessage");
+
+  try {
+    msg.textContent = "Memeriksa akun admin...";
+    const result = await auth.signInWithEmailAndPassword(email, password);
+    const adminDoc = await db.collection("adminUsers").doc(result.user.uid).get();
+
+    if (!adminDoc.exists || adminDoc.data().role !== "admin") {
+      await auth.signOut();
+      throw new Error("Akun ini tidak terdaftar sebagai admin.");
+    }
+
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("adminPage").classList.remove("hidden");
+    msg.textContent = "";
+    await loadReports();
+  } catch (error) {
+    msg.textContent = "Login gagal: " + error.message;
+  }
+}
+
+async function loadReports() {
+  const area = document.getElementById("reports");
+  area.textContent = "Mengambil laporan...";
+
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("Silakan login admin kembali.");
+
+    const adminDoc = await db.collection("adminUsers").doc(user.uid).get();
+    if (!adminDoc.exists || adminDoc.data().role !== "admin") {
+      throw new Error("Akses admin tidak ditemukan.");
+    }
+
+    const snapshot = await db.collection("absensi").get();
+    if (snapshot.empty) {
+      area.textContent = "Belum ada data absensi.";
+      return;
+    }
+
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    rows.sort((a,b) => String(b.waktu || "").localeCompare(String(a.waktu || "")));
+
+    area.innerHTML = rows.map(item => `
+      <div class="record">
+        <b>${escapeHTML(item.nama)}</b><br>
+        Status: ${escapeHTML(item.status)}<br>
+        Waktu: ${escapeHTML(item.waktu)}<br>
+        GPS: ${escapeHTML(item.latitude)}, ${escapeHTML(item.longitude)}<br>
+        <a target="_blank" rel="noopener" href="https://www.google.com/maps?q=${encodeURIComponent(item.latitude)},${encodeURIComponent(item.longitude)}">Lihat lokasi di peta</a>
+        ${item.fotoURL ? `<br><a href="${escapeHTML(item.fotoURL)}" target="_blank" rel="noopener">Lihat foto selfie</a>` : ""}
+      </div>
+    `).join("");
+  } catch (error) {
+    area.textContent = "Gagal memuat laporan: " + error.message;
+  }
+}
+
+async function adminLogout() {
+  await auth.signOut();
+  document.getElementById("adminPage").classList.add("hidden");
+  document.getElementById("loginBox").classList.remove("hidden");
+  document.getElementById("reports").textContent = "Anda sudah keluar.";
+}
+</script>
+</body>
+  </html>
