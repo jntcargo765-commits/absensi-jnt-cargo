@@ -176,9 +176,17 @@
   }
 
   function pakaiFoto(dataUrl) {
+    // toDataURL pada kanvas kosong/ter-taint menghasilkan "data:," — jangan dipakai.
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/') || dataUrl.length < 2048) {
+      pesan('galat', 'Selfie gagal diproses. Tekan “Ambil Selfie” sekali lagi.');
+      return;
+    }
     state.foto = dataUrl;
     const pratinjau = $('pratinjau');
     pratinjau.src = dataUrl;
+    // CSS memakai [hidden] { display: none !important; } sehingga class .aktif
+    // saja tidak cukup: atribut hidden wajib dilepas agar hasil selfie terlihat.
+    pratinjau.hidden = false;
     pratinjau.classList.add('aktif');
     const video = $('video');
     video.classList.remove('aktif');
