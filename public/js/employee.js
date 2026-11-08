@@ -452,6 +452,7 @@
       state.foto = null;
       const pratinjau = $('pratinjau');
       pratinjau.classList.remove('aktif');
+      pratinjau.hidden = true;
       pratinjau.removeAttribute('src');
       const btnAmbil = $('btnAmbil');
       btnAmbil.hidden = false;
