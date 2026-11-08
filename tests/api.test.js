@@ -244,6 +244,10 @@ test('rekap harian memuat jam masuk dan pulang per karyawan', async () => {
   assert.ok(grup.tanggal);
   assert.ok(grup.karyawan.length >= 1);
   assert.ok(grup.hadir >= 1);
+  assert.ok(grup.entri >= 4, 'rekap harus menghitung semua entri absen hari itu');
+  const budi = grup.karyawan.find((o) => /budi/i.test(o.nama));
+  assert.ok(budi, 'Budi harus ada pada rekap harian');
+  assert.equal(budi.jumlahMasuk, 2, 'dua absen masuk Budi harus terhitung');
 });
 
 test('rekap bulanan menghitung kehadiran per karyawan', async () => {
@@ -255,7 +259,7 @@ test('rekap bulanan menghitung kehadiran per karyawan', async () => {
   const siti = data.data.find((o) => /siti/i.test(o.nama));
   assert.ok(siti, 'Siti harus ada pada rekap bulanan');
   assert.equal(siti.totalMasuk, 1);
-  assert.equal(siti.totalPulang, 1);
+  assert.equal(siti.totalPulang, 2, 'absen pulang berulang ikut dihitung');
   assert.equal(siti.hariHadir, 1);
 });
 
