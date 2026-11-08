@@ -1,0 +1,21 @@
+{
+  "name": "absensi-jnt-cargo",
+  "version": "1.0.0",
+  "description": "Aplikasi Absensi JNT CARGO",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jntcargo765-commits/absensi-jnt-cargo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jntcargo765-commits/absensi-jnt-cargo/issues"
+  },
+  "homepage": "https://github.com/jntcargo765-commits/absensi-jnt-cargo#readme"
+}
