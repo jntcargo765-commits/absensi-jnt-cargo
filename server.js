@@ -51,7 +51,11 @@ app.use(
   })
 );
 
-app.get('/healthz', (req, res) => {
+// Endpoint kesehatan. Ditangani lewat middleware agar tetap terjangkau walau
+// edge/proxy meneruskan path dalam variasi lain (mis. /healthz/ atau berawalan).
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  if (!/\/healthz\/?$/i.test(req.path)) return next();
   res.json({ ok: true, waktu: bagianWaktu().iso });
 });
 
