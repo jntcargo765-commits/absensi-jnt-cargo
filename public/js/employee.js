@@ -367,7 +367,7 @@
   function renderStatus(wadah, data, nama) {
     wadah.textContent = '';
 
-    const buatKotak = (judul, jam) => {
+    const buatKotak = (judul, jam, jumlah) => {
       const kotak = document.createElement('div');
       kotak.className = 'status-kotak ' + (jam ? 'sudah' : 'belum');
       const j = document.createElement('span');
@@ -375,23 +375,27 @@
       j.textContent = judul;
       const i = document.createElement('span');
       i.className = 'isi';
-      i.textContent = jam ? jam + ' WIB' : 'Belum absen';
+      const n = Number(jumlah) || 0;
+      i.textContent = jam ? jam + ' WIB' + (n > 1 ? ` · ${n}×` : '') : 'Belum absen';
       kotak.appendChild(j);
       kotak.appendChild(i);
       return kotak;
     };
 
-    wadah.appendChild(buatKotak('Absen Masuk', data.masuk));
-    wadah.appendChild(buatKotak('Absen Pulang', data.pulang));
+    const jumlahMasuk = Number(data.jumlahMasuk) || 0;
+    const jumlahPulang = Number(data.jumlahPulang) || 0;
+
+    wadah.appendChild(buatKotak('Absen Masuk', data.masuk, jumlahMasuk));
+    wadah.appendChild(buatKotak('Absen Pulang', data.pulang, jumlahPulang));
 
     const info = document.createElement('p');
     info.className = 'bantuan';
     info.style.gridColumn = '1 / -1';
     const tanggalTeks = fmtTanggalPendek.format(new Date());
-    info.textContent =
-      data.masuk && data.pulang
-        ? `${nama} sudah menyelesaikan absensi hari ini (${tanggalTeks}).`
-        : `${nama} — status absensi ${tanggalTeks}.`;
+    const total = jumlahMasuk + jumlahPulang;
+    info.textContent = total
+      ? `${nama} — ${jumlahMasuk}× masuk, ${jumlahPulang}× pulang pada ${tanggalTeks}. Absen boleh dilakukan berkali-kali dalam sehari.`
+      : `${nama} — belum ada absensi pada ${tanggalTeks}.`;
     wadah.appendChild(info);
   }
 
