@@ -131,32 +131,38 @@ test('absen masuk tersimpan dengan jam WIB dan koordinat', async () => {
   assert.ok(data.data.id > 0);
 });
 
-test('absen masuk ganda ditolak', async () => {
+test('absen masuk boleh berkali-kali dalam sehari', async () => {
   const res = await absen('Budi Santoso', 'MASUK');
-  assert.equal(res.status, 409);
-  assert.match((await json(res)).pesan, /sudah absen MASUK/i);
+  assert.equal(res.status, 201, 'absen masuk kedua tidak boleh ditolak');
+  assert.equal((await json(res)).data.tipe, 'MASUK');
+
+  const status = await json(await kirim('/api/absensi/hari-ini?nama=Budi%20Santoso'));
+  assert.equal(status.data.jumlahMasuk, 2, 'dua absen masuk harus tercatat');
+  assert.ok(status.data.masuk, 'jam masuk pertama harus terisi');
 });
 
-test('absen pulang tanpa absen masuk ditolak', async () => {
+test('absen pulang tanpa absen masuk tetap dicatat', async () => {
   const res = await absen('Siti Aminah', 'PULANG');
-  assert.equal(res.status, 409);
-  assert.match((await json(res)).pesan, /MASUK/i);
-});
-
-test('absen pulang tersimpan setelah absen masuk', async () => {
-  const masuk = await absen('Siti Aminah', 'MASUK');
-  assert.equal(masuk.status, 201);
-  const res = await absen('Siti Aminah', 'PULANG');
-  assert.equal(res.status, 201);
+  assert.equal(res.status, 201, 'absen pulang tidak boleh diwajibkan didahului absen masuk');
   assert.equal((await json(res)).data.tipe, 'PULANG');
 });
 
-test('status hari ini menampilkan jam masuk dan pulang', async () => {
+test('absen pulang berkali-kali dalam sehari tetap tercatat', async () => {
+  const masuk = await absen('Siti Aminah', 'MASUK');
+  assert.equal(masuk.status, 201);
+  const res = await absen('Siti Aminah', 'PULANG');
+  assert.equal(res.status, 201, 'absen pulang kedua tidak boleh ditolak');
+  assert.equal((await json(res)).data.tipe, 'PULANG');
+});
+
+test('status hari ini menampilkan jam dan jumlah absen', async () => {
   const res = await kirim('/api/absensi/hari-ini?nama=Siti%20Aminah');
   assert.equal(res.status, 200);
   const data = await json(res);
   assert.ok(data.data.masuk, 'jam masuk harus terisi');
   assert.ok(data.data.pulang, 'jam pulang harus terisi');
+  assert.equal(data.data.jumlahMasuk, 1);
+  assert.equal(data.data.jumlahPulang, 2);
 });
 
 test('endpoint admin menolak akses tanpa login', async () => {
