@@ -51,11 +51,12 @@ app.use(
   })
 );
 
-// Endpoint kesehatan. Ditangani lewat middleware agar tetap terjangkau walau
-// edge/proxy meneruskan path dalam variasi lain (mis. /healthz/ atau berawalan).
+// Endpoint kesehatan. Path /healthz direservasi edge hosting (selalu 404),
+// jadi endpoint resmi memakai /api/healthz; /healthz tetap dilayani bila
+// suatu saat diteruskan ke aplikasi.
 app.use((req, res, next) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') return next();
-  if (!/\/healthz\/?$/i.test(req.path)) return next();
+  if (!/^\/(api\/)?healthz\/?$/i.test(req.path)) return next();
   res.json({ ok: true, waktu: bagianWaktu().iso });
 });
 
