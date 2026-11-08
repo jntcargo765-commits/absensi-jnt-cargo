@@ -15,7 +15,10 @@ Desain memakai palet biru, putih, dan oranye serta responsif untuk Android dan i
 - **Selfie wajib** dari kamera langsung (`getUserMedia`), tanpa unggah dari galeri.
 - **GPS wajib**: koordinat, akurasi, dan tautan Google Maps ikut tersimpan.
 - Tanggal dan jam dicatat otomatis memakai zona **WIB (Asia/Jakarta, UTC+7)**.
-- Status hari ini (jam masuk/pulang) ditampilkan setelah absen.
+- **Tanpa batas harian**: ABSEN MASUK dan ABSEN PULANG boleh ditekan berkali-kali dalam sehari.
+  Setiap penekanan disimpan sebagai entri baru lengkap dengan selfie, GPS, dan jamnya sendiri —
+  tidak ada penolakan "sudah absen hari ini", dan ABSEN PULANG tidak wajib didahului ABSEN MASUK.
+- Status hari ini menampilkan jam masuk pertama, jam pulang terakhir, dan jumlah absen.
 
 ### Dashboard admin (`/admin`)
 
