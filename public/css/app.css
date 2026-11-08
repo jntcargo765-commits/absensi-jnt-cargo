@@ -52,7 +52,7 @@ body.halaman-karyawan {
 }
 
 img { max-width: 100%; display: block; }
-.tersembunyi { display: none !important; }
+[hidden], .tersembunyi { display: none !important; }
 
 /* ---------- Topbar ---------- */
 .topbar {
