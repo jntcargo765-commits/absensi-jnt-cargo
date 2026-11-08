@@ -146,7 +146,7 @@ app.post(
   auth.wajibAdmin,
   asinkron(async (req, res) => {
     const body = req.body || {};
-    auth.ubahPassword(req.admin.id, body.lama, body.baru);
+    auth.ubahPassword(req.admin.admin_id, body.lama, body.baru);
     res.json({ ok: true, pesan: 'Password admin berhasil diperbarui.' });
   })
 );

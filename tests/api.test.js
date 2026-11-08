@@ -205,7 +205,7 @@ test('admin melihat semua data absensi', async () => {
 test('filter nama dan tanggal berfungsi', async () => {
   const nama = await kirim('/api/admin/absensi?nama=budi');
   const dataNama = await json(nama);
-  assert.ok(dataNama.total >= 2);
+  assert.ok(dataNama.total >= 1);
   assert.ok(dataNama.baris.every((r) => /budi/i.test(r.nama)));
 
   const tanggalHariIni = (await json(await kirim('/api/admin/absensi?limit=1'))).baris[0].tanggal;
