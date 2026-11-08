@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b3d91">
+<meta name="description" content="Absensi karyawan JNT CARGO dengan selfie kamera, GPS, dan waktu WIB.">
+<title>ABSENSI JNT CARGO — Kehadiran Karyawan</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="halaman-karyawan">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7h10v8H3z"/><path d="M13 10h4l3 3v2h-7z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <strong>ABSENSI</strong>
+        <span>JNT CARGO</span>
+      </span>
+    </a>
+    <a class="nav-link" href="/admin">Dashboard Admin</a>
+  </div>
+</header>
+
+<main class="wadah">
+
+  <section class="kartu kartu-utama">
+    <div class="kepala-kartu">
+      <div>
+        <p class="eyebrow">Portal Kehadiran Karyawan</p>
+        <h1>Absensi Harian</h1>
+      </div>
+      <div class="jam-wib" aria-live="polite">
+        <span class="jam" id="jamWib">--:--:--</span>
+        <span class="tanggal" id="tanggalWib">Memuat tanggal…</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="nama">Nama Karyawan</label>
+      <input id="nama" name="nama" type="text" inputmode="text" autocomplete="name"
+             placeholder="Contoh: Budi Santoso" maxlength="60" required>
+      <p class="bantuan">Ketik nama lengkap sesuai data kehadiran. Tidak perlu login.</p>
+    </div>
+
+    <div class="grid-dua">
+      <div class="panel">
+        <h2 class="judul-panel">
+          <span class="nomor">1</span> Selfie Kamera
+          <span class="badge-status" id="badgeKamera">Belum aktif</span>
+        </h2>
+
+        <div class="bingkai-kamera" id="bingkaiKamera">
+          <video id="video" playsinline autoplay muted aria-label="Pratinjau kamera selfie"></video>
+          <img id="pratinjau" alt="Hasil foto selfie" hidden>
+          <div class="kamera-kosong" id="kameraKosong">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+            </svg>
+            <span>Kamera belum aktif</span>
+          </div>
+        </div>
+
+        <div class="tombol-baris">
+          <button type="button" class="btn btn-garis" id="btnKamera">Aktifkan Kamera</button>
+          <button type="button" class="btn btn-biru" id="btnAmbil" disabled>Ambil Selfie</button>
+          <button type="button" class="btn btn-netral" id="btnUlang" hidden>Ulangi</button>
+        </div>
+
+        <input type="file" id="inputFallback" accept="image/*" capture="user" class="tersembunyi">
+
+        <p class="bantuan" id="statusKamera">Tekan “Aktifkan Kamera”, lalu izinkan akses kamera pada browser.</p>
+      </div>
+
+      <div class="panel">
+        <h2 class="judul-panel">
+          <span class="nomor">2</span> Lokasi GPS
+          <span class="badge-status" id="badgeGps">Belum aktif</span>
+        </h2>
+
+        <div class="kotak-gps" id="kotakGps">
+          <div class="gps-baris">
+            <span class="label">Koordinat</span>
+            <span class="nilai" id="koordinat">—</span>
+          </div>
+          <div class="gps-baris">
+            <span class="label">Akurasi</span>
+            <span class="nilai" id="akurasi">—</span>
+          </div>
+          <div class="gps-baris">
+            <span class="label">Status</span>
+            <span class="nilai" id="statusLokasi">Menunggu izin lokasi</span>
+          </div>
+        </div>
+
+        <div class="tombol-baris">
+          <button type="button" class="btn btn-biru" id="btnLokasi">Ambil Lokasi GPS</button>
+          <a class="btn btn-netral" id="petaLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Lihat Peta</a>
+        </div>
+
+        <p class="bantuan">GPS wajib aktif saat absen. Izin lokasi hanya dipakai untuk mencatat titik absensi.</p>
+      </div>
+    </div>
+
+    <div class="aksi-absensi">
+      <button type="button" class="btn btn-masuk" id="btnMasuk">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+        ABSEN MASUK
+      </button>
+      <button type="button" class="btn btn-pulang" id="btnPulang">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        ABSEN PULANG
+      </button>
+    </div>
+
+    <div class="pesan" id="pesan" role="status" hidden></div>
+  </section>
+
+  <section class="kartu">
+    <h2 class="judul-kartu">Status Absensi Hari Ini</h2>
+    <div class="status-hari" id="statusHari">
+      <p class="bantuan">Isi nama karyawan untuk melihat status absensi hari ini.</p>
+    </div>
+  </section>
+
+  <section class="kartu kartu-info">
+    <h2 class="judul-kartu">Panduan Singkat</h2>
+    <ol class="daftar-panduan">
+      <li>Isi nama karyawan, lalu aktifkan kamera dan ambil selfie langsung dari kamera HP.</li>
+      <li>Tekan <strong>Ambil Lokasi GPS</strong> dan izinkan akses lokasi pada browser.</li>
+      <li>Tekan <strong>ABSEN MASUK</strong> saat mulai bekerja dan <strong>ABSEN PULANG</strong> saat selesai.</li>
+      <li>Tanggal dan jam dicatat otomatis mengikuti zona waktu WIB (UTC+7).</li>
+    </ol>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>© <span id="tahun">2025</span> JNT CARGO — Sistem Absensi Karyawan</span>
+</footer>
+
+<canvas id="kanvas" class="tersembunyi"></canvas>
+<script src="/js/employee.js" defer></script>
+</body>
+</html>
