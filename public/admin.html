@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b3d91">
+<meta name="robots" content="noindex, nofollow">
+<title>Dashboard Admin — ABSENSI JNT CARGO</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="halaman-admin">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7h10v8H3z"/><path d="M13 10h4l3 3v2h-7z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <strong>ABSENSI</strong>
+        <span>JNT CARGO</span>
+      </span>
+    </a>
+    <div class="topbar-aksi">
+      <span class="admin-chip" id="adminChip" hidden></span>
+      <button type="button" class="nav-link nav-tombol" id="btnKeluar" hidden>Keluar</button>
+      <a class="nav-link" href="/" id="linkKaryawan">Absensi Karyawan</a>
+    </div>
+  </div>
+</header>
+
+<main class="wadah">
+
+  <!-- ================= LOGIN ================= -->
+  <section class="kartu kartu-login" id="panelLogin">
+    <div class="kepala-kartu">
+      <div>
+        <p class="eyebrow">Area Terbatas</p>
+        <h1>Login Admin</h1>
+      </div>
+      <div class="ikon-login" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+        </svg>
+      </div>
+    </div>
+
+    <form id="formLogin" autocomplete="on">
+      <div class="field">
+        <label for="adminId">ID Admin</label>
+        <input id="adminId" name="adminId" type="text" autocomplete="username" placeholder="Masukkan ID admin" required>
+      </div>
+      <div class="field">
+        <label for="adminPassword">Password</label>
+        <input id="adminPassword" name="password" type="password" autocomplete="current-password" placeholder="Masukkan password" required>
+      </div>
+      <button type="submit" class="btn btn-biru btn-lebar" id="btnLogin">MASUK DASHBOARD</button>
+      <div class="pesan" id="pesanLogin" role="alert" hidden></div>
+    </form>
+    <p class="bantuan">Hanya akun admin yang dapat mengakses data absensi karyawan.</p>
+  </section>
+
+  <!-- ================= DASHBOARD ================= -->
+  <div id="panelDashboard" hidden>
+
+    <section class="ringkasan" id="ringkasan">
+      <div class="kartu-stat">
+        <span class="stat-label">Karyawan Hadir Hari Ini</span>
+        <strong class="stat-nilai" id="statHadir">0</strong>
+        <span class="stat-catatan" id="statTanggal">—</span>
+      </div>
+      <div class="kartu-stat">
+        <span class="stat-label">Absen Masuk Hari Ini</span>
+        <strong class="stat-nilai" id="statMasuk">0</strong>
+        <span class="stat-catatan">Total scan masuk</span>
+      </div>
+      <div class="kartu-stat">
+        <span class="stat-label">Absen Pulang Hari Ini</span>
+        <strong class="stat-nilai" id="statPulang">0</strong>
+        <span class="stat-catatan">Total scan pulang</span>
+      </div>
+      <div class="kartu-stat">
+        <span class="stat-label">Karyawan Bulan Ini</span>
+        <strong class="stat-nilai" id="statBulan">0</strong>
+        <span class="stat-catatan" id="statBulanLabel">—</span>
+      </div>
+    </section>
+
+    <nav class="tab" role="tablist" aria-label="Menu dashboard">
+      <button type="button" class="tab-tombol aktif" role="tab" aria-selected="true" data-tab="absensi">Data Absensi</button>
+      <button type="button" class="tab-tombol" role="tab" aria-selected="false" data-tab="harian">Rekap Harian</button>
+      <button type="button" class="tab-tombol" role="tab" aria-selected="false" data-tab="bulanan">Rekap Bulanan</button>
+      <button type="button" class="tab-tombol" role="tab" aria-selected="false" data-tab="pengaturan">Pengaturan</button>
+    </nav>
+
+    <!-- Tab: Data Absensi -->
+    <section class="kartu panel-tab" id="tab-absensi">
+      <h2 class="judul-kartu">Data Absensi</h2>
+      <form class="filter" id="formFilter">
+        <div class="field">
+          <label for="filterNama">Nama Karyawan</label>
+          <input id="filterNama" type="text" placeholder="Cari nama…" maxlength="60">
+        </div>
+        <div class="field">
+          <label for="filterDari">Tanggal Dari</label>
+          <input id="filterDari" type="date">
+        </div>
+        <div class="field">
+          <label for="filterSampai">Tanggal Sampai</label>
+          <input id="filterSampai" type="date">
+        </div>
+        <div class="field">
+          <label for="filterTipe">Jenis</label>
+          <select id="filterTipe">
+            <option value="">Semua</option>
+            <option value="MASUK">Masuk</option>
+            <option value="PULANG">Pulang</option>
+          </select>
+        </div>
+        <div class="filter-aksi">
+          <button type="submit" class="btn btn-biru">Terapkan</button>
+          <button type="button" class="btn btn-netral" id="btnReset">Reset</button>
+          <button type="button" class="btn btn-oranye" id="btnExport">Unduh Excel</button>
+        </div>
+      </form>
+
+      <div class="info-hasil" id="infoAbsensi">Memuat data…</div>
+      <div class="tabel-wadah">
+        <table class="tabel" id="tabelAbsensi">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama</th>
+              <th>Tanggal</th>
+              <th>Jam WIB</th>
+              <th>Jenis</th>
+              <th>Lokasi GPS</th>
+              <th>Selfie</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="paginasi" id="paginasi" hidden>
+        <button type="button" class="btn btn-netral" id="btnSebelum">Sebelumnya</button>
+        <span id="infoHalaman"></span>
+        <button type="button" class="btn btn-netral" id="btnSesudah">Berikutnya</button>
+      </div>
+    </section>
+
+    <!-- Tab: Rekap Harian -->
+    <section class="kartu panel-tab" id="tab-harian" hidden>
+      <h2 class="judul-kartu">Rekap Harian</h2>
+      <form class="filter" id="formHarian">
+        <div class="field">
+          <label for="harianNama">Nama Karyawan</label>
+          <input id="harianNama" type="text" placeholder="Semua nama" maxlength="60">
+        </div>
+        <div class="field">
+          <label for="harianDari">Tanggal Dari</label>
+          <input id="harianDari" type="date">
+        </div>
+        <div class="field">
+          <label for="harianSampai">Tanggal Sampai</label>
+          <input id="harianSampai" type="date">
+        </div>
+        <div class="filter-aksi">
+          <button type="submit" class="btn btn-biru">Tampilkan</button>
+          <button type="button" class="btn btn-netral" id="btnHarianReset">Reset</button>
+          <button type="button" class="btn btn-oranye" id="btnExportHarian">Unduh Excel</button>
+        </div>
+      </form>
+      <div class="info-hasil" id="infoHarian">Memuat data…</div>
+      <div class="tabel-wadah">
+        <table class="tabel" id="tabelHarian">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Hari</th>
+              <th>Nama</th>
+              <th>Jam Masuk</th>
+              <th>Jam Pulang</th>
+              <th>Lokasi Masuk</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab: Rekap Bulanan -->
+    <section class="kartu panel-tab" id="tab-bulanan" hidden>
+      <h2 class="judul-kartu">Rekap Bulanan</h2>
+      <form class="filter" id="formBulanan">
+        <div class="field">
+          <label for="bulananBulan">Bulan</label>
+          <input id="bulananBulan" type="month">
+        </div>
+        <div class="field">
+          <label for="bulananNama">Nama Karyawan</label>
+          <input id="bulananNama" type="text" placeholder="Semua nama" maxlength="60">
+        </div>
+        <div class="filter-aksi">
+          <button type="submit" class="btn btn-biru">Tampilkan</button>
+          <button type="button" class="btn btn-netral" id="btnBulananReset">Reset</button>
+          <button type="button" class="btn btn-oranye" id="btnExportBulanan">Unduh Excel</button>
+        </div>
+      </form>
+      <div class="info-hasil" id="infoBulanan">Memuat data…</div>
+      <div class="tabel-wadah">
+        <table class="tabel" id="tabelBulanan">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Karyawan</th>
+              <th>Hari Hadir</th>
+              <th>Total Masuk</th>
+              <th>Total Pulang</th>
+              <th>Belum Absen Pulang</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab: Pengaturan -->
+    <section class="kartu panel-tab" id="tab-pengaturan" hidden>
+      <h2 class="judul-kartu">Pengaturan Akun Admin</h2>
+      <p class="bantuan">Ganti password admin secara berkala agar data absensi tetap aman.</p>
+      <form class="filter" id="formPassword">
+        <div class="field">
+          <label for="passLama">Password Lama</label>
+          <input id="passLama" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="field">
+          <label for="passBaru">Password Baru (min. 8 karakter)</label>
+          <input id="passBaru" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="field">
+          <label for="passUlang">Ulangi Password Baru</label>
+          <input id="passUlang" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="filter-aksi">
+          <button type="submit" class="btn btn-biru">Simpan Password</button>
+        </div>
+      </form>
+      <div class="pesan" id="pesanPassword" role="status" hidden></div>
+    </section>
+  </div>
+</main>
+
+<div class="modal" id="modalFoto" hidden>
+  <div class="modal-isi" role="dialog" aria-modal="true" aria-label="Foto selfie">
+    <div class="modal-kepala">
+      <strong id="modalJudul">Foto Selfie</strong>
+      <button type="button" class="modal-tutup" id="btnTutupModal" aria-label="Tutup">×</button>
+    </div>
+    <img id="modalGambar" alt="Foto selfie karyawan">
+  </div>
+</div>
+
+<footer class="footer">
+  <span>© <span id="tahun">2025</span> JNT CARGO — Sistem Absensi Karyawan</span>
+</footer>
+
+<script src="/js/admin.js" defer></script>
+</body>
+</html>
