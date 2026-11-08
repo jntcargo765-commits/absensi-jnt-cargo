@@ -202,10 +202,27 @@
     sembunyikanPesan();
   }
 
-  function ambilSelfie() {
+  async function ambilSelfie() {
     const video = $('video');
-    if (!state.stream || !video.videoWidth) {
-      pesan('peringatan', 'Kamera belum siap. Tekan “Aktifkan Kamera” lalu coba lagi.');
+    if (!state.stream) {
+      pesan('peringatan', 'Kamera belum aktif. Tekan “Aktifkan Kamera” lalu coba lagi.');
+      return;
+    }
+    // Sebagian HP baru mengisi videoWidth beberapa saat setelah kamera menyala.
+    if (!video.videoWidth || !video.videoHeight) {
+      await new Promise((selesai) => {
+        const berhenti = () => {
+          video.removeEventListener('loadedmetadata', berhenti);
+          video.removeEventListener('playing', berhenti);
+          selesai();
+        };
+        video.addEventListener('loadedmetadata', berhenti);
+        video.addEventListener('playing', berhenti);
+        setTimeout(berhenti, 2500);
+      });
+    }
+    if (!video.videoWidth || !video.videoHeight) {
+      pesan('peringatan', 'Kamera belum siap. Tunggu sebentar lalu tekan “Ambil Selfie” lagi.');
       return;
     }
     const dataUrl = gambarKeKanvas(video, video.videoWidth, video.videoHeight);
