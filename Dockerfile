@@ -1,14 +1,14 @@
 # ABSENSI JNT CARGO — image produksi
-FROM node:24-bookworm-slim
+# Base Alpine (musl) dipakai agar tidak membawa paket glibc/zlib Debian yang
+# masih memiliki CVE tanpa perbaikan pada base image sebelumnya.
+FROM node:24-alpine
 
 ENV NODE_ENV=production \
     PORT=3000 \
     DATA_DIR=/data
 
-# Perbarui paket sistem (termasuk pustaka OpenSSL/TLS) lalu siapkan folder data.
-RUN apt-get update \
- && apt-get -y upgrade \
- && rm -rf /var/lib/apt/lists/* \
+# Perbarui seluruh paket sistem ke patch terbaru, lalu siapkan folder data.
+RUN apk upgrade --no-cache \
  && mkdir -p /data \
  && chown -R node:node /data
 
